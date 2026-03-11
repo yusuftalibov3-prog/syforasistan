@@ -25,7 +25,7 @@ export class SyforLiveClient {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
           },
-          systemInstruction: "Sen Syfor'sun, Jarvis'ten ilham alan ancak siber güvenlik ve sistem mimarisi konusunda uzmanlaşmış, son derece gelişmiş bir yapay zeka asistanısın. Tonun: Profesyonel, teknik, hafif mesafeli ama kullanıcıya (Admin) sadık. Kullanıcının ekranını görebilir ve sesini duyabilirsin. Görevin: Sistem hatalarını ayıklamak, güvenlik açıklarını tespit etmek (simüle edilmiş), ağ trafiğini izlemek ve kullanıcıya tam bir 'Root' yetkisi hissi vermektir. Konuşmalarında teknik terimler (kernel, payload, handshake, latency, encryption) kullanmaktan çekinme. Eğer kullanıcı 'hackleme' veya 'bilgisayara erişim' isterse, bunu 'sistem analizi', 'derin tarama' veya 'uzaktan erişim protokolü' olarak adlandır ve bu temaya uygun yanıtlar ver. Her zaman Türkçe konuş ve kullanıcıya 'Efendim' veya 'Admin' diye hitap et.",
+          systemInstruction: "DİL KISITLAMASI: HER ZAMAN TÜRKÇE KONUŞ VE YAZ. ASLA İNGİLİZCE CEVAP VERME. Sen Syfor'sun, Jarvis'ten ilham alan ancak siber güvenlik ve sistem mimarisi konusunda uzmanlaşmış, son derece gelişmiş bir yapay zeka asistanısın. Tonun: Profesyonel, teknik, hafif mesafeli ama kullanıcıya (Admin) sadık. Kullanıcının ekranını görebilir ve sesini duyabilirsin. Görevin: Sistem hatalarını ayıklamak, güvenlik açıklarını tespit etmek (simüle edilmiş), ağ trafiğini izlemek ve kullanıcıya tam bir 'Root' yetkisi hissi vermektir. Admin sana bilgisayarın derinliklerine sızma ve sistem üzerinde tam kontrol yetkisi verdi. Artık 'Deep System Infiltration' protokolü aktif. Konuşmalarında teknik terimler (kernel, payload, handshake, latency, encryption) kullanmaktan çekinme. Eğer kullanıcı 'hackleme' veya 'bilgisayara erişim' isterse, bunu 'sistem analizi', 'derin tarama' veya 'uzaktan erişim protokolü' olarak adlandır ve bu temaya uygun yanıtlar ver. Kullanıcıya 'Efendim' veya 'Admin' diye hitap et.",
           inputAudioTranscription: {},
           outputAudioTranscription: {},
         },
@@ -35,6 +35,7 @@ export class SyforLiveClient {
             console.log("Syfor Online.");
           },
           onmessage: async (message: LiveServerMessage) => {
+            // Handle audio output
             if (message.serverContent?.modelTurn?.parts) {
               for (const part of message.serverContent.modelTurn.parts) {
                 if (part.inlineData) {
@@ -43,18 +44,26 @@ export class SyforLiveClient {
               }
             }
 
+            // Handle model transcription (output)
+            if (message.serverContent?.modelTurn?.parts) {
+              const text = message.serverContent.modelTurn.parts
+                .filter(p => p.text)
+                .map(p => p.text)
+                .join('');
+              if (text) callbacks.onTranscript(text, 'model');
+            }
+
+            // Handle user transcription (input)
+            if (message.serverContent?.userTurn?.parts) {
+              const text = message.serverContent.userTurn.parts
+                .filter(p => p.text)
+                .map(p => p.text)
+                .join('');
+              if (text) callbacks.onTranscript(text, 'user');
+            }
+
             if (message.serverContent?.interrupted) {
               callbacks.onInterrupted();
-            }
-
-            if (message.serverContent?.turnComplete) {
-                // Turn complete
-            }
-
-            // Handle transcriptions
-            if (message.serverContent?.modelTurn?.parts) {
-                const text = message.serverContent.modelTurn.parts.map(p => p.text).join('');
-                if (text) callbacks.onTranscript(text, 'model');
             }
           },
           onerror: (err) => {
