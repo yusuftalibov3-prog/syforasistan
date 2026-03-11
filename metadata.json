@@ -1,0 +1,5 @@
+{
+  "name": "Syfor AI Assistant",
+  "description": "A high-tech personal AI assistant inspired by Jarvis, featuring live voice interaction, screen analysis, and technical support.",
+  "requestFramePermissions": ["camera", "microphone", "display-capture"]
+}
